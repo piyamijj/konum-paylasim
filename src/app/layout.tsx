@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import DebugErrorBanner from "@/components/DebugErrorBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default function RootLayout({
           strategy="beforeInteractive"
           crossOrigin=""
         />
+        <DebugErrorBanner />
         <div className="mx-auto flex min-h-screen w-full max-w-md flex-col">
           {children}
         </div>

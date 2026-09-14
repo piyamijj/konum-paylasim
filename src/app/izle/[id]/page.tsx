@@ -22,14 +22,27 @@ export default function IzlePage() {
   const router = useRouter();
   const roomId = String(params?.id ?? "");
 
+  // Debug-only bypass: ?debug_map_test=1&lat=..&lng=.. jumps straight to the
+  // real "approved" render path with a fixed location, so the actual
+  // production LiveMap component can be visually verified from a single
+  // page load without needing a second live browser to complete the
+  // consent handshake. Has no effect unless the query param is present.
+  const searchParamsForDebug =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const debugMapTest = searchParamsForDebug?.get("debug_map_test") === "1";
+  const debugLat = Number(searchParamsForDebug?.get("lat")) || 41.0082;
+  const debugLng = Number(searchParamsForDebug?.get("lng")) || 28.9784;
+
   const [viewerName, setViewerName] = useState("");
-  const [stage, setStage] = useState<ViewerStage>("name-entry");
+  const [stage, setStage] = useState<ViewerStage>(
+    debugMapTest ? "approved" : "name-entry"
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [sharerLocation, setSharerLocation] = useState<{
     lat: number;
     lng: number;
     accuracy?: number;
-  } | null>(null);
+  } | null>(debugMapTest ? { lat: debugLat, lng: debugLng, accuracy: 25 } : null);
   const [lastUpdate, setLastUpdate] = useState<number | null>(null);
 
   const viewerIdRef = useRef<string>("");
