@@ -258,7 +258,9 @@ export default function IzlePage() {
 
           <div
             className="mb-4 flex-1 overflow-hidden rounded-2xl"
-            style={{ minHeight: "420px", height: "60vh" }}
+            style={{ minHeight: "420px", height: "60vh", border: "3px solid red" }}
+            data-debug-stage={stage}
+            data-debug-has-location={String(!!sharerLocation)}
           >
             {sharerLocation ? (
               <LiveMap sharerLocation={sharerLocation} />
