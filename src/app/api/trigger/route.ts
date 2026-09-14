@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       {
         error:
           "Gerçek zamanlı sunucuya bağlanılamadı. Lütfen Pusher ortam değişkenlerinin doğru tanımlandığından emin olun.",
+        _debug: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );
