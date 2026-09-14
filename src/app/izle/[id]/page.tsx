@@ -141,6 +141,10 @@ export default function IzlePage() {
         <div className="w-9" />
       </header>
 
+      <div style={{ background: "yellow", color: "black", padding: "6px", fontSize: "12px" }}>
+        DEBUG stage={stage} · hasLocation={String(!!sharerLocation)}
+      </div>
+
       {stage === "name-entry" && (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full border border-neon-orange/30 bg-night-900 shadow-neon-orange">
