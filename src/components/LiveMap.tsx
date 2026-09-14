@@ -1,9 +1,17 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import L from "leaflet";
-// leaflet.css is imported globally in globals.css so it is available before
-// this component (which is dynamically/lazily loaded) ever mounts.
+import { useEffect, useRef, useState } from "react";
+import type * as Leaflet from "leaflet";
+
+// Leaflet is NOT imported as a bundled module here. It is loaded once as a
+// plain global <script> tag from the root layout (window.L), which avoids
+// the next/dynamic + webpack code-split path entirely — that split was
+// producing a broken chunk reference (404) in production builds.
+declare global {
+  interface Window {
+    L?: typeof Leaflet;
+  }
+}
 
 interface LiveMapProps {
   sharerLocation: { lat: number; lng: number; accuracy?: number } | null;
@@ -17,13 +25,34 @@ export default function LiveMap({
   isSharer = false,
 }: LiveMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const sharerMarkerRef = useRef<L.Marker | null>(null);
-  const sharerAccuracyCircleRef = useRef<L.Circle | null>(null);
-  const viewerMarkerRef = useRef<L.Marker | null>(null);
+  const mapRef = useRef<Leaflet.Map | null>(null);
+  const sharerMarkerRef = useRef<Leaflet.Marker | null>(null);
+  const sharerAccuracyCircleRef = useRef<Leaflet.Circle | null>(null);
+  const viewerMarkerRef = useRef<Leaflet.Marker | null>(null);
+  const [leafletReady, setLeafletReady] = useState(false);
+
+  // Wait until the global Leaflet script has finished loading (window.L
+  // exists). It is requested with a normal <script> tag in the root layout,
+  // so on most loads it is already present; this poll is just a safety net
+  // for slow networks or race conditions on first paint.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.L) {
+      setLeafletReady(true);
+      return;
+    }
+    const interval = setInterval(() => {
+      if (typeof window !== "undefined" && window.L) {
+        setLeafletReady(true);
+        clearInterval(interval);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
+    if (!leafletReady) return;
+    const L = window.L;
+    if (!L || !mapContainerRef.current || mapRef.current) return;
 
     // Default center (Istanbul) if no location is provided yet
     const initialLat = sharerLocation?.lat || 41.0082;
@@ -38,17 +67,17 @@ export default function LiveMap({
     // Add dark mode styled OpenStreetMap tiles
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       className: "dark-tiles",
     }).addTo(map);
 
     mapRef.current = map;
 
     // Safety net: if the container had zero size at the moment Leaflet
-    // measured it (common right after a flex/conditional mount, or right
-    // after next/dynamic finishes loading the chunk), the tiles never paint
-    // even though the div is visually present. Force Leaflet to re-measure
-    // a few times shortly after mount and again on window resize.
+    // measured it (common right after a flex/conditional mount), the tiles
+    // never paint even though the div is visually present. Force Leaflet to
+    // re-measure a few times shortly after mount and again on any resize.
     const invalidate = () => mapRef.current?.invalidateSize();
     const timers = [50, 200, 500, 1000].map((delay) => setTimeout(invalidate, delay));
     window.addEventListener("resize", invalidate);
@@ -68,15 +97,17 @@ export default function LiveMap({
         mapRef.current = null;
       }
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leafletReady]);
 
   // Update Sharer Location Marker
   useEffect(() => {
+    const L = window.L;
     const map = mapRef.current;
-    if (!map || !sharerLocation) return;
+    if (!L || !map || !sharerLocation) return;
 
     const { lat, lng, accuracy } = sharerLocation;
-    const position: L.LatLngExpression = [lat, lng];
+    const position: Leaflet.LatLngExpression = [lat, lng];
 
     // Custom icon for sharer (neon green pulse)
     const sharerIcon = L.divIcon({
@@ -113,12 +144,13 @@ export default function LiveMap({
 
     // Pan map to sharer location if it's the first update or if we want to keep tracking
     map.panTo(position);
-  }, [sharerLocation, isSharer]);
+  }, [sharerLocation, isSharer, leafletReady]);
 
   // Update Viewer Location Marker (if available)
   useEffect(() => {
+    const L = window.L;
     const map = mapRef.current;
-    if (!map || !viewerLocation) {
+    if (!L || !map || !viewerLocation) {
       if (viewerMarkerRef.current) {
         viewerMarkerRef.current.remove();
         viewerMarkerRef.current = null;
@@ -127,7 +159,7 @@ export default function LiveMap({
     }
 
     const { lat, lng } = viewerLocation;
-    const position: L.LatLngExpression = [lat, lng];
+    const position: Leaflet.LatLngExpression = [lat, lng];
 
     // Custom icon for viewer (neon orange)
     const viewerIcon = L.divIcon({
@@ -144,12 +176,13 @@ export default function LiveMap({
         .bindPopup(isSharer ? "İzleyici Konumu" : "Sizin Konumunuz")
         .openPopup();
     }
-  }, [viewerLocation, isSharer]);
+  }, [viewerLocation, isSharer, leafletReady]);
 
   // Fit bounds if both locations exist
   useEffect(() => {
+    const L = window.L;
     const map = mapRef.current;
-    if (!map || !sharerLocation || !viewerLocation) return;
+    if (!L || !map || !sharerLocation || !viewerLocation) return;
 
     const bounds = L.latLngBounds([
       [sharerLocation.lat, sharerLocation.lng],
@@ -157,12 +190,18 @@ export default function LiveMap({
     ]);
 
     map.fitBounds(bounds, { padding: [50, 50] });
-  }, [sharerLocation, viewerLocation]);
+  }, [sharerLocation, viewerLocation, leafletReady]);
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-2xl border border-night-700 bg-night-950 shadow-inner">
       <div ref={mapContainerRef} className="h-full w-full" />
-      
+
+      {!leafletReady && (
+        <div className="absolute inset-0 z-[999] flex items-center justify-center bg-night-950">
+          <span className="text-sm text-night-300">Harita yükleniyor...</span>
+        </div>
+      )}
+
       {/* Map Overlay Controls */}
       <div className="absolute bottom-4 left-4 z-[1000] flex flex-col gap-2">
         <button

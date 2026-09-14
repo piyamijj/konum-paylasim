@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import LiveMap from "@/components/LiveMap";
 import { getPusherClient, getRoomChannelName, PUSHER_EVENTS } from "@/lib/pusher-client";
 import ConsentModal from "@/components/ConsentModal";
 import StatusBadge from "@/components/StatusBadge";
 import type { JoinRequestPayload } from "@/lib/types";
 
-const LiveMap = dynamic(() => import("@/components/LiveMap"), { ssr: false });
 
 interface PendingRequest {
   viewerId: string;

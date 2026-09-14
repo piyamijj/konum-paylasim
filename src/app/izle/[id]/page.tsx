@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import LiveMap from "@/components/LiveMap";
 import { v4 as uuidv4 } from "uuid";
 import { getPusherClient, getRoomChannelName, PUSHER_EVENTS } from "@/lib/pusher-client";
 import StatusBadge from "@/components/StatusBadge";
 import type { JoinResponsePayload, LatLngData } from "@/lib/types";
 
-const LiveMap = dynamic(() => import("@/components/LiveMap"), { ssr: false });
 
 type ViewerStage =
   | "name-entry"

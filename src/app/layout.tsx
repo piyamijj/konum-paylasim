@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +23,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" className="dark">
+      <head>
+        {/* Leaflet is loaded as a plain global script/stylesheet (not a
+            bundled npm import) so the map never depends on a webpack
+            code-split chunk that could fail to load. */}
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          crossOrigin=""
+        />
+      </head>
       <body className="min-h-screen bg-night-950 text-slate-100 antialiased">
+        <Script
+          src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          strategy="beforeInteractive"
+          crossOrigin=""
+        />
         <div className="mx-auto flex min-h-screen w-full max-w-md flex-col">
           {children}
         </div>
