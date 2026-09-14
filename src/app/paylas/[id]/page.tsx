@@ -278,7 +278,7 @@ export default function PaylasPage() {
           </div>
 
           {/* Map */}
-          <div className="mb-4 flex-1 overflow-hidden rounded-2xl" style={{ minHeight: "320px", height: "55vh" }}>
+          <div className="relative mb-4 flex-1 overflow-hidden rounded-2xl" style={{ minHeight: "320px", height: "55vh" }}>
             <LiveMap sharerLocation={sharerLocation} isSharer />
           </div>
 
