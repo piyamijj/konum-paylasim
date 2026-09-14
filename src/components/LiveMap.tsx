@@ -194,6 +194,22 @@ export default function LiveMap({
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-2xl border border-night-700 bg-night-950 shadow-inner">
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          zIndex: 100000,
+          background: "yellow",
+          color: "black",
+          fontSize: "12px",
+          padding: "4px",
+        }}
+      >
+        LIVEMAP MOUNTED · leafletReady={String(leafletReady)} · L={String(
+          typeof window !== "undefined" && !!window.L
+        )}
+      </div>
       <div ref={mapContainerRef} className="h-full w-full" />
 
       {!leafletReady && (
