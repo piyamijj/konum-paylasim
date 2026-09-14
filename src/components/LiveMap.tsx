@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+// leaflet.css is imported globally in globals.css so it is available before
+// this component (which is dynamically/lazily loaded) ever mounts.
 
 interface LiveMapProps {
   sharerLocation: { lat: number; lng: number; accuracy?: number } | null;
@@ -43,7 +44,25 @@ export default function LiveMap({
 
     mapRef.current = map;
 
+    // Safety net: if the container had zero size at the moment Leaflet
+    // measured it (common right after a flex/conditional mount, or right
+    // after next/dynamic finishes loading the chunk), the tiles never paint
+    // even though the div is visually present. Force Leaflet to re-measure
+    // a few times shortly after mount and again on window resize.
+    const invalidate = () => mapRef.current?.invalidateSize();
+    const timers = [50, 200, 500, 1000].map((delay) => setTimeout(invalidate, delay));
+    window.addEventListener("resize", invalidate);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && mapContainerRef.current) {
+      resizeObserver = new ResizeObserver(invalidate);
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
     return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener("resize", invalidate);
+      resizeObserver?.disconnect();
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;

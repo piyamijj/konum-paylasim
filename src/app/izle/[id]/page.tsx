@@ -110,7 +110,7 @@ export default function IzlePage() {
     : null;
 
   return (
-    <main className="flex min-h-screen w-full flex-1 flex-col px-4 py-6">
+    <main className="flex w-full flex-1 flex-col px-4 py-6">
       {/* Header */}
       <header className="mb-4 flex items-center justify-between">
         <button
@@ -240,7 +240,7 @@ export default function IzlePage() {
 
           <div
             className="mb-4 flex-1 overflow-hidden rounded-2xl"
-            style={{ minHeight: "420px" }}
+            style={{ minHeight: "420px", height: "60vh" }}
           >
             {sharerLocation ? (
               <LiveMap sharerLocation={sharerLocation} />

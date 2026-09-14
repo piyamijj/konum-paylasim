@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet's own stylesheet is imported globally (not component-level) so it is
+   guaranteed to be present before any map initializes, avoiding a race where
+   the map container has no size/position rules yet and renders blank. */
+@import "leaflet/dist/leaflet.css";
+
 :root {
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 5, 9, 20;

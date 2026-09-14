@@ -203,7 +203,7 @@ export default function PaylasPage() {
   };
 
   return (
-    <main className="flex min-h-screen w-full flex-1 flex-col px-4 py-6">
+    <main className="flex w-full flex-1 flex-col px-4 py-6">
       {/* Header */}
       <header className="mb-4 flex items-center justify-between">
         <button
@@ -279,7 +279,7 @@ export default function PaylasPage() {
           </div>
 
           {/* Map */}
-          <div className="mb-4 flex-1 overflow-hidden rounded-2xl" style={{ minHeight: "320px" }}>
+          <div className="mb-4 flex-1 overflow-hidden rounded-2xl" style={{ minHeight: "320px", height: "55vh" }}>
             <LiveMap sharerLocation={sharerLocation} isSharer />
           </div>
 
