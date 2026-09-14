@@ -31,24 +31,6 @@ export default function IzlePage() {
     accuracy?: number;
   } | null>(null);
 
-  // Debug-only bypass: ?debug_map_test=1&lat=..&lng=.. jumps straight to the
-  // real "approved" render path with a fixed location, so the actual
-  // production LiveMap component can be visually verified from a single
-  // page load without needing a second live browser to complete the
-  // consent handshake. Runs in an effect (after hydration, exactly like a
-  // normal state transition triggered by a real event) so it never causes a
-  // server/client hydration mismatch. Has no effect unless the query param
-  // is present.
-  useEffect(() => {
-    const sp = new URLSearchParams(window.location.search);
-    if (sp.get("debug_map_test") === "1") {
-      const lat = Number(sp.get("lat")) || 41.0082;
-      const lng = Number(sp.get("lng")) || 28.9784;
-      setSharerLocation({ lat, lng, accuracy: 25 });
-      setStage("approved");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const [lastUpdate, setLastUpdate] = useState<number | null>(null);
 
   const viewerIdRef = useRef<string>("");
